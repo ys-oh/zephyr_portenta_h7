@@ -1,0 +1,81 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "portenta_h7.dtsi"
+
+/ {
+    model = "Arduino PORTENTA H7 board";
+    compatible = "arduino,portenta-h7";
+
+    chosen {
+        zephyr,console = &uart4;
+        zephyr,shell-uart = &uart4;
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+        zephyr,code-partition = &slot0_partition;
+    };
+
+    leds {
+        red_led_1:led_1 {
+            status = "okay";
+        };
+        green_led_2:led_2 {
+            status = "okay";
+        };
+        blue_led_3:led_3 {
+            status = "okay";
+        };
+    };
+};
+
+&oscen {
+    status = "okay";
+};
+
+&clk_hse {
+    hse-bypass;
+    clock-frequency = <DT_FREQ_M(25)>;
+    status = "okay";
+};
+
+&pll {
+    clocks = <&clk_hse>;
+    div-m = <5>;
+    mul-n = <160>;
+    div-p = <2>;
+    div-q = <10>;
+    div-r = <2>;
+    status = "okay";
+};
+
+&rcc {
+    d1cpre = <1>;
+    hpre = <2>;
+    d1ppre = <2>;
+    d2ppre1 = <2>;
+    d2ppre2 = <2>;
+    d3ppre = <2>;
+    clocks = <&pll>;
+    clock-frequency = <DT_FREQ_M(400)>;
+    status = "okay";
+};
+
+&uart4 {
+    status = "okay";
+};
+
+&mac {
+    status = "okay";
+};
+
+&rng {
+    status = "okay";
+};
+
+&i2c1 {
+    status = "okay";
+};
+

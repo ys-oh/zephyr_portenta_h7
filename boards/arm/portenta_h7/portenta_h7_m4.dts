@@ -1,0 +1,40 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "portenta_h7.dtsi"
+
+/ {
+    model = "Arduino PORTENTA H7 board";
+    compatible = "arduino,portenta-h7";
+
+    chosen {
+        /* zephyr,console = &uart4; */
+        /* zephyr,shell-uart = &uart4; */
+        zephyr,sram = &sram1;
+        zephyr,flash = &flash0;
+        zephyr,code-partition = &slot1_partition;
+    };
+
+    leds {
+        red_led_1:led_1 {
+            status = "okay";
+        };
+        green_led_2:led_2 {
+            status = "okay";
+        };
+        blue_led_3:led_3 {
+            status = "okay";
+        };
+    };
+};
+
+&rcc {
+    clock-frequency = <DT_FREQ_M(200)>;
+};
+
+&uart4 {
+    /* status = "okay"; */
+};

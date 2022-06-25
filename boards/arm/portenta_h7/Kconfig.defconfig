@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_PORTENTA_H7_M7 || BOARD_PORTENTA_H7_M4
+
+config BOARD
+	default "portenta_h7_m7" if BOARD_PORTENTA_H7_M7
+	default "portenta_h7_m4" if BOARD_PORTENTA_H7_M4
+
+config STM32H7_DUAL_CORE
+	default y
+
+if NETWORKING
+
+config NET_L2_ETHERNET
+	default y
+
+endif # NETWORKING
+
+endif

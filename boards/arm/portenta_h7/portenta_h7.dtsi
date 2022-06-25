@@ -1,0 +1,140 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <st/h7/stm32h747Xi_m7.dtsi>
+#include <st/h7/stm32h747xihx-pinctrl.dtsi>
+
+/ {
+
+    gpioled: leds {
+        compatible = "gpio-leds";
+        red_led_1:led_1 {
+            gpios = <&gpiok 5 GPIO_ACTIVE_LOW>;
+            label = "LED1";
+        };
+        green_led_2:led_2 {
+            gpios = <&gpiok 6 GPIO_ACTIVE_LOW>;
+            label = "LED2";
+        };
+        blue_led_3:led_3 {
+            gpios = <&gpiok 7 GPIO_ACTIVE_LOW>;
+            label = "LED3";
+        };
+    };
+
+    gpio_keys {
+        compatible = "gpio-keys";
+        boot_sel: button_1 {
+            label = "BOOT_SEL";
+            gpios = <&gpioi 8 GPIO_ACTIVE_HIGH>;
+        };
+
+        oscen: oscen {
+            label = "OSCEN";
+            gpios = <&gpioh 1 GPIO_ACTIVE_HIGH>;
+            status = "disabled";
+        };
+    };
+
+    aliases {
+        led0 = &red_led_1;
+        led1 = &green_led_2;
+        led2 = &blue_led_3;
+    };
+};
+
+&usart1 {
+    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "disabled";
+};
+
+&uart4 {
+    pinctrl-0 = <&uart4_tx_pa0 &uart4_rx_pi9>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "disabled";
+};
+
+&usart6 {
+    pinctrl-0 = <&usart6_tx_pg14 &usart6_rx_pg9>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "disabled";
+};
+
+&uart8 {
+    pinctrl-0 = <&uart8_tx_pj8 &uart8_rx_pj9>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "disabled";
+};
+
+&i2c1 {
+    status = "disabled";
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
+};
+
+&i2c3 {
+    status = "disabled";
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c3_scl_ph7 &i2c3_sda_ph8>;
+};
+
+&mac {
+    status = "disabled";
+    pinctrl-names = "default";
+    pinctrl-0 = <&eth_ref_clk_pa1
+               &eth_mdio_pa2
+               &eth_crs_dv_pa7
+               &eth_mdc_pc1
+               &eth_rxd0_pc4
+               &eth_rxd1_pc5
+               &eth_tx_en_pg11
+               &eth_txd0_pg13
+               &eth_txd1_pg12>;
+};
+
+&flash0 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        boot_partition: partition@0 {
+            label = "mcuboot";
+            reg = <0x000000000 0x40000>;
+        };
+
+        slot0_partition: partition@40000 {
+            label = "image-0";
+            reg = <0x00040000 0x100000>;
+        };
+
+        slot1_partition: partition@140000 {
+            label = "image-1";
+            reg = <0x00140000 0x80000>;
+        };
+
+        storage: partition@1C0000 {
+            label = "storage";
+            reg = <0x001C0000 0x40000>;
+        };
+    };
+};
+
+&i2c1 {
+    pmic: i2c1@0x08 {
+        compatible = "i2c-device";
+        reg = <0x08>;
+        label = "PMIC";
+    };
+    crypto: i2c1@0x48 {
+        compatible = "i2c-device";
+        reg = <0x48>;
+        label = "CRYPTO";
+    };
+};
+
