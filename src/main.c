@@ -18,16 +18,21 @@ void main(void)
 
     while (1)
     {
+#ifdef CONFIG_CPU_CORTEX_M7
         LOG_INF("led on\n");
         led_on(dev, 0);
         led_on(dev, 1);
-        led_on(dev, 2);
         k_sleep(K_MSEC(500));
 
         LOG_INF("led off\n");
         led_off(dev, 0);
         led_off(dev, 1);
-        led_off(dev, 2);
         k_sleep(K_MSEC(500));
+#else
+        led_on(dev, 2);
+        k_sleep(K_MSEC(100));
+        led_off(dev, 2);
+        k_sleep(K_MSEC(100));
+#endif
     }
 }
