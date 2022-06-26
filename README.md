@@ -40,6 +40,7 @@ west flash
 - [X] boot m7 
 - [X] boot m4
 - [X] dfu flash
+- [X] uart console
 - [ ] power mangement
 - [ ] memory controller
 - [X] led driver
