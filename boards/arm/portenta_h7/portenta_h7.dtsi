@@ -119,12 +119,12 @@
 
         slot0_partition: partition@40000 {
             label = "image-0";
-            reg = <0x00040000 0x100000>;
+            reg = <0x00040000 0xC00000>;
         };
 
-        slot1_partition: partition@140000 {
+        slot1_partition: partition@100000 {
             label = "image-1";
-            reg = <0x00140000 0x80000>;
+            reg = <0x00100000 0x80000>;
         };
 
         storage: partition@1C0000 {
