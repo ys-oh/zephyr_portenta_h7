@@ -5,9 +5,9 @@ CONFIG_SOC_STM32H747XX=y
 
 # Board config should be specified since there are 2 possible targets
 CONFIG_BOARD_PORTENTA_H7_M7=y
-CONFIG_INIT_ARCH_HW_AT_BOOT=y
-# Enable the internal SMPS regulator
-# CONFIG_POWER_SUPPLY_DIRECT_SMPS=y
+
+# Enable the External SMPS regulator
+CONFIG_POWER_SUPPLY_SMPS_1V8_SUPPLIES_LDO=y
 
 # enable pinmux
 CONFIG_PINMUX=y
@@ -18,6 +18,7 @@ CONFIG_PINCTRL=y
 
 # Enable clocks
 CONFIG_CLOCK_CONTROL=y
+CONFIG_CLOCK_CONTROL_INIT_PRIORITY=3
 
 # Enable MPU
 CONFIG_ARM_MPU=y
