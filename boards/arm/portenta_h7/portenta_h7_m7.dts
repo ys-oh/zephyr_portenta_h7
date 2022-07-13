@@ -72,3 +72,47 @@
     status = "okay";
 };
 
+// &usbotg_hs {
+//     status = "okay";
+//     pinctrl-names = "default";
+//     pinctrl-0 = <
+//       /* USB_OTG_HS */
+// 			// &usb_otg_hs_sof_pa4
+// 			// &usb_otg_hs_id_pb12
+// 			// &usb_otg_hs_vbus_pb13
+// 			// &usb_otg_hs_dm_pb14
+// 			// &usb_otg_hs_dp_pb15
+// 
+//       /* USB_OTG_HS_ULPI */
+//       &usb_otg_hs_ulpi_clk_pa5
+//       &usb_otg_hs_ulpi_d0_pa3
+//       &usb_otg_hs_ulpi_d1_pb0
+//       &usb_otg_hs_ulpi_d2_pb1
+//       &usb_otg_hs_ulpi_d3_pb10
+//       &usb_otg_hs_ulpi_d4_pb11
+//       &usb_otg_hs_ulpi_d5_pb12
+//       &usb_otg_hs_ulpi_d6_pb13
+//       &usb_otg_hs_ulpi_d7_pb5
+//       &usb_otg_hs_ulpi_stp_pc0
+//       &usb_otg_hs_ulpi_nxt_ph4
+//       &usb_otg_hs_ulpi_dir_pi11
+//     >;
+// 
+//     cdc_acm_uart0: cdc_acm_uart0 {
+//         compatible = "zephyr,cdc-acm-uart";
+//         label = "CDC_ACM_0";
+//         status = "okay";
+//     };
+//     num-bidir-endpoints=<6>;
+// };
+
+&usbotg_fs {
+    status = "okay";
+    pinctrl-names="default";
+    pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+        label = "CDC_ACM_0";
+        status = "okay";
+    };
+};
