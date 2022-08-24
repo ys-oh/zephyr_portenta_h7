@@ -35,6 +35,8 @@ static int early_sys_init(const struct device *dev)
     HAL_GPIO_Init(GPIOH, &gpio_osc_init_structure);
     HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, 1);
 
+    HAL_GPIO_Init(GPIOJ, &gpio_osc_init_structure);
+    HAL_GPIO_WritePin(GPIOJ, GPIO_PIN_4, 1);
     return 0;
 }
 

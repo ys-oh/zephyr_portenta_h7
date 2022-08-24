@@ -49,7 +49,7 @@ west flash
 - [ ] cryto driver
 - [ ] display interface
 - [ ] camera interface
-- [ ] USB FS driver
+- [X] USB FS driver
 - [ ] USB HS driver
 - [ ] USB Console driver
 

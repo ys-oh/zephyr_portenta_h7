@@ -7,8 +7,12 @@ LOG_MODULE_REGISTER(main);
 #include <drivers/gpio.h>
 #include <drivers/led.h>
 
+#include <usb/usb_device.h>
+
 void main(void)
 {
+    usb_enable(NULL);
+
     const struct device* dev = DEVICE_DT_GET(DT_NODELABEL(gpioled)); 
     if (!device_is_ready(dev))
     {

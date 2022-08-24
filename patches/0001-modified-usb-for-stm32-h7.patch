@@ -1,0 +1,44 @@
+From 0fac2aac07df8a6b69b36575c4b9e0db8e8fab6f Mon Sep 17 00:00:00 2001
+From: yunsik oh <oyster90@naver.com>
+Date: Thu, 16 Jun 2022 20:28:36 +0900
+Subject: [PATCH 1/2] modified usb for stm32 h7
+
+---
+ drivers/usb/device/usb_dc_stm32.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/device/usb_dc_stm32.c b/drivers/usb/device/usb_dc_stm32.c
+index 3ced502422..4404aa2c8f 100644
+--- a/drivers/usb/device/usb_dc_stm32.c
++++ b/drivers/usb/device/usb_dc_stm32.c
+@@ -300,7 +300,7 @@ static int usb_dc_stm32_clock_enable(void)
+ 		LOG_ERR("Unable to enable USB clock");
+ 		return -EIO;
+ 	}
+-
++#if !defined(CONFIG_SOC_SERIES_STM32H7X)
+ #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
+ #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc)
+ 	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
+@@ -310,6 +310,18 @@ static int usb_dc_stm32_clock_enable(void)
+ 	LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
+ 	LL_AHB1_GRP1_DisableClockLowPower(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
+ #endif
++#endif
++#else // !defned CONFIG_SOC_SERIES_STM32H7X 
++#if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
++#if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc)
++	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++	LL_APB2_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++#else
++	/* Disable ULPI interface (for external high-speed PHY) clock */
++	LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++	LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++#endif
++#endif
+ #endif
+ 
+ 	return 0;
+-- 
+2.36.1
+
