@@ -114,6 +114,7 @@
         compatible = "zephyr,cdc-acm-uart";
         label = "CDC_ACM_0";
         status = "okay";
+    };
 };
 
 &quadspi {
