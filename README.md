@@ -52,6 +52,6 @@ west flash
 - [ ] camera interface
 - [X] USB FS driver
 - [ ] USB HS driver
-- [ ] USB Console driver
+- [X] USB Console driver
 
 <br>
