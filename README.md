@@ -42,7 +42,7 @@ west flash
 - [X] dfu flash
 - [X] uart console
 - [ ] power mangement
-- [ ] memory controller
+- [X] memory controller
 - [X] external flash memory 
 - [X] led driver
 - [ ] charger driver
