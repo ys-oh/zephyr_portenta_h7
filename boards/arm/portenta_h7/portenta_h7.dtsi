@@ -42,23 +42,17 @@
     };
 
     otghs_ulpi_phy: otghs_ulpi_phy {
-      compatible = "usb-nop-xceiv";// "st,stm32-usbphyc";
-      #phy-cells = <0>;
-      // reg = <0>;
-      label = "OTGHS_ULPI_PHY";
-      status="okay";
-    };
-
-    otghs_fs_phy: otghs_fs_phy {
       compatible = "usb-nop-xceiv";
       #phy-cells = <0>;
-      label = "OTGHS_FS_PHY";
+      label = "OTGHS_ULPI_PHY";
+      status = "disabled";
     };
 
     otgfs_phy: otgfs_phy {
       compatible = "usb-nop-xceiv";
       #phy-cells = <0>;
       label = "OTGFS_PHY";
+      status = "disabled";
     };
 
     gpioled: leds {
