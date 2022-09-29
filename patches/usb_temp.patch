@@ -1,0 +1,211 @@
+diff --git a/drivers/usb/device/usb_dc_stm32.c b/drivers/usb/device/usb_dc_stm32.c
+index 4404aa2c8f..e6ae61f3a0 100644
+--- a/drivers/usb/device/usb_dc_stm32.c
++++ b/drivers/usb/device/usb_dc_stm32.c
+@@ -68,6 +68,8 @@ static const struct pinctrl_dev_config *usb_pcfg =
+ #define USB_OTG_HS_EMB_PHY (DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc) && \
+ 			    DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs))
+ 
++#define USB_OTG_HS_ULPI_PHY (!DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc) && \
++			    DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs))
+ /*
+  * USB, USB_OTG_FS and USB_DRD_FS are defined in STM32Cube HAL and allows to
+  * distinguish between two kind of USB DC. STM32 F0, F3, L0 and G4 series
+@@ -105,10 +107,28 @@ static const struct pinctrl_dev_config *usb_pcfg =
+ 
+ #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
+ #define EP_MPS USB_OTG_HS_MAX_PACKET_SIZE
++#define EP_ISO_MPS  USB_MAX_FS_ISO_MPS
+ #elif DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otgfs) || DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usb)
+ #define EP_MPS USB_OTG_FS_MAX_PACKET_SIZE
++#define EP_ISO_MPS  USB_MAX_FS_ISO_MPS
+ #endif
+ 
++#if defined(CONFIG_SOC_SERIES_STM32H7X)
++/* Reserve space in the RX buffer for:
++ * - 1 isochonous packet
++ * - 2 max sized non-isochonous packets
++ * - setup buffer - 10 words as specified by Reference Manual
++ * - global nak out - 1 words as specified by Reference Manual
++ */
++#define FIFO_WORDS \
++        ((EP_ISO_MPS + 4)) + \
++        (((EP_MPS + 4)) * 2) + \
++        (10 * 4) + (1 * 4)
++
++#define FIFO_EP_WORDS 0x200
++// (FIFO_WORDS / 4)
++
++#else
+ /* We need one RX FIFO and n TX-IN FIFOs */
+ #define FIFO_NUM (1 + USB_NUM_BIDIR_ENDPOINTS)
+ 
+@@ -117,7 +137,7 @@ static const struct pinctrl_dev_config *usb_pcfg =
+ 
+ /* Allocate FIFO memory evenly between the FIFOs */
+ #define FIFO_EP_WORDS (FIFO_WORDS / FIFO_NUM)
+-
++#endif
+ #endif /* USB */
+ 
+ /* Size of a USB SETUP packet */
+@@ -225,12 +245,14 @@ static int usb_dc_stm32_clock_enable(void)
+ 
+ 	z_stm32_hsem_lock(CFG_HW_CLK48_CONFIG_SEMID, HSEM_LOCK_DEFAULT_RETRY);
+ 
++#if !defined(USB_OTG_HS_ULPI_PHY)
+ 	LL_RCC_HSI48_Enable();
+ 	while (!LL_RCC_HSI48_IsReady()) {
+ 		/* Wait for HSI48 to become ready */
+ 	}
+ 
+ 	LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
++#endif
+ 
+ #ifdef CONFIG_SOC_SERIES_STM32U5X
+ 	/* VDDUSB independent USB supply (PWR clock is on) */
+@@ -310,19 +332,8 @@ static int usb_dc_stm32_clock_enable(void)
+ 	LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
+ 	LL_AHB1_GRP1_DisableClockLowPower(LL_AHB1_GRP1_PERIPH_OTGHSULPI);
+ #endif
+-#endif
+-#else // !defned CONFIG_SOC_SERIES_STM32H7X 
+-#if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
+-#if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_usbphyc)
+-	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
+-	LL_APB2_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
+-#else
+-	/* Disable ULPI interface (for external high-speed PHY) clock */
+-	LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
+-	LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
+-#endif
+-#endif
+-#endif
++#endif // DT_HAS_COMPAT_STATUS_OKAY(st_stm32_otghs)
++#endif // !defined(CONFIG_SOC_SERIES_STM32H7X)
+ 
+ 	return 0;
+ }
+@@ -334,7 +345,7 @@ static uint32_t usb_dc_stm32_get_maximum_speed(void)
+ 	 * If max-speed is not passed via DT, set it to USB controller's
+ 	 * maximum hardware capability.
+ 	 */
+-#if USB_OTG_HS_EMB_PHY
++#if USB_OTG_HS_EMB_PHY || USB_OTG_HS_ULPI_PHY
+ 	uint32_t speed = USB_OTG_SPEED_HIGH;
+ #else
+ 	uint32_t speed = USB_OTG_SPEED_FULL;
+@@ -359,6 +370,17 @@ static uint32_t usb_dc_stm32_get_maximum_speed(void)
+ 
+ 	return speed;
+ }
++
++static inline uint32_t usb_dc_stm32_get_phy_iface(void)
++{
++#if USB_OTG_HS_ULPI_PHY
++    return PCD_PHY_ULPI;
++#elif USB_OTG_HS_EMB_PHY
++    return PCD_PHY_UTMI;
++#else
++    return PCD_PHY_EMBEDDED;
++#endif
++}
+ #endif /* USB_OTG_FS || USB_OTG_HS */
+ 
+ static int usb_dc_stm32_init(void)
+@@ -385,11 +407,7 @@ static int usb_dc_stm32_init(void)
+ #endif
+ 	usb_dc_stm32_state.pcd.Init.dev_endpoints = USB_NUM_BIDIR_ENDPOINTS;
+ 	usb_dc_stm32_state.pcd.Init.speed = usb_dc_stm32_get_maximum_speed();
+-#if USB_OTG_HS_EMB_PHY
+-	usb_dc_stm32_state.pcd.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+-#else
+-	usb_dc_stm32_state.pcd.Init.phy_itface = PCD_PHY_EMBEDDED;
+-#endif
++	usb_dc_stm32_state.pcd.Init.phy_itface = usb_dc_stm32_get_phy_iface();
+ 	usb_dc_stm32_state.pcd.Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;
+ 	usb_dc_stm32_state.pcd.Init.vbus_sensing_enable = DISABLE;
+ 
+@@ -407,12 +425,29 @@ static int usb_dc_stm32_init(void)
+ 	/* Currently assuming FS mode. Need to disable the ULPI clock on USB2 and
+ 	 * enable the FS clock. Need to make this dependent on HS or FS config.
+ 	 */
+-
+-	LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB2OTGHSULPI);
+-	LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB2OTGHSULPI);
+-
+-	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB2OTGHS);
+-	LL_AHB1_GRP1_EnableClockSleep(LL_AHB1_GRP1_PERIPH_USB2OTGHS);
++  if (usb_dc_stm32_state.pcd.Instance == USB_OTG_FS)
++  {
++      LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB2OTGHSULPI);
++      LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB2OTGHSULPI);
++
++      LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB2OTGHS);
++      LL_AHB1_GRP1_EnableClockSleep(LL_AHB1_GRP1_PERIPH_USB2OTGHS);
++  }
++  else if (usb_dc_stm32_state.pcd.Instance == USB_OTG_HS)
++  {
++      LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++      // LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++      LL_APB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++      // LL_AHB1_GRP1_DisableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++
++      LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++      LL_AHB1_GRP1_EnableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHS);
++
++#if USB_OTG_HS_ULPI_PHY
++      LL_APB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++      LL_AHB1_GRP1_EnableClockSleep(LL_AHB1_GRP1_PERIPH_USB1OTGHSULPI);
++#endif
++  }
+ 
+ 	LL_PWR_EnableUSBVoltageDetector();
+ 
+diff --git a/include/usb/usb_device.h b/include/usb/usb_device.h
+index ee7007589d..dcd349a352 100644
+--- a/include/usb/usb_device.h
++++ b/include/usb/usb_device.h
+@@ -83,6 +83,9 @@ extern "C" {
+ #define USB_MAX_FS_BULK_MPS	64   /**< full speed MPS for bulk EP */
+ #define USB_MAX_FS_INT_MPS	64   /**< full speed MPS for interrupt EP */
+ #define USB_MAX_FS_ISO_MPS	1023 /**< full speed MPS for isochronous EP */
++#define USB_MAX_HS_BULK_MPS 512  /**< high speed MPS for bulk EP */
++#define USB_MAX_HS_INT_MPS  1024 /**< high speed MPS for interrupt EP */
++#define USB_MAX_HS_ISO_MPS  1024 /**< high speed MPS for isochronous EP */
+ 
+ /*************************************************************************
+  *  USB application interface
+diff --git a/subsys/usb/class/Kconfig.cdc b/subsys/usb/class/Kconfig.cdc
+index 51ffd7d9c6..c20392a8c1 100644
+--- a/subsys/usb/class/Kconfig.cdc
++++ b/subsys/usb/class/Kconfig.cdc
+@@ -25,13 +25,13 @@ config USB_CDC_ACM_RINGBUF_SIZE
+ 	  USB CDC ACM ring buffer size
+ 
+ config CDC_ACM_INTERRUPT_EP_MPS
+-	int
++	int "USB DC ACM INT EP MPS"
+ 	default 16
+ 	help
+ 	  CDC ACM class interrupt IN endpoint size
+ 
+ config CDC_ACM_BULK_EP_MPS
+-	int
++	int "USB DC BULK EP MPS"
+ 	default 512 if USB_DC_HAS_HS_SUPPORT
+ 	default 64
+ 	help
+diff --git a/subsys/usb/usb_descriptor.c b/subsys/usb/usb_descriptor.c
+index 57ca8ce87f..e876236c7c 100644
+--- a/subsys/usb/usb_descriptor.c
++++ b/subsys/usb/usb_descriptor.c
+@@ -270,7 +270,7 @@ static int usb_validate_ep_cfg_data(struct usb_ep_descriptor * const ep_descr,
+ 					*requested_ep |= (1U << idx);
+ 				}
+ 				LOG_DBG("endpoint 0x%x", ep_data[i].ep_addr);
+-				return 0;
++        break;
+ 			}
+ 		}
+ 	}
