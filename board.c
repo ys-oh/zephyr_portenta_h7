@@ -1,5 +1,10 @@
-#include <zephyr.h>
+#include <version.h>
+
+#if ZEPHYR_VERSION_CODE >= ZEPHYR_VERSION(3,1,0)
+#include <zephyr/kernel.h>
+#else
 #include <kernel.h>
+#endif
 #include <device.h>
 #include <stm32h7xx_hal.h>
 
