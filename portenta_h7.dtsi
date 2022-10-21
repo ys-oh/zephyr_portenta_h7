@@ -6,59 +6,61 @@
 
 / {
     soc {
-      usbotg_fs: usb@40080000 {
-        compatible = "st,stm32-otgfs";
-        reg = <0x40080000 0x40000>;
-        interrupts = <101 0>, <98 0>, <99 0>;
-        interrupt-names = "otgfs", "ep1_out", "ep1_in";
-        num-bidir-endpoints = <6>;
-        ram-size = <1280>;
-        maximum-speed = "full-speed";
-        phys = <&otgfs_phy>;
-        clocks = <&rcc STM32_CLOCK_BUS_AHB2 0x00000080>;
-        status = "disabled";
-        label = "OTGFS";
-      };
-
-      usbotg_hs: usb@40040000 {
-        compatible = "st,stm32-otghs";
-        reg = <0x40040000 0x40000>;
-        interrupts = <77 0>, <74 0>, <75 0>;
-        interrupt-names = "otghs", "ep1_out", "ep1_in";
-        num-bidir-endpoints = <9>;
-        ram-size = <4096>;
-        maximum-speed = "high-speed";
-        clocks = <&rcc STM32_CLOCK_BUS_AHB1 0x4000000>;
-        phys = <&otghs_ulpi_phy>;
-        status = "disabled";
-        label= "OTGHS";
-      };
-
-		  pinctrl: pin-controller@58020000 {
-        usb_otg_hs_ulpi_clk_pa5: usb_otg_hs_ulpi_clk_pa5 {
-          pinmux = <STM32_PINMUX('A', 5, AF10)>;
+        usbotg_fs: usb@40080000 {
+            compatible = "st,stm32-otgfs";
+            reg = <0x40080000 0x40000>;
+            interrupts = <101 0>, <98 0>, <99 0>;
+            interrupt-names = "otgfs", "ep1_out", "ep1_in";
+            num-bidir-endpoints = <6>;
+            ram-size = <1280>;
+            maximum-speed = "full-speed";
+            phys = <&otgfs_phy>;
+            clocks = <&rcc STM32_CLOCK_BUS_AHB2 0x00000080>;
+            status = "disabled";
+            label = "OTGFS";
         };
-      };
+
+        usbotg_hs: usb@40040000 {
+            compatible = "st,stm32-otghs";
+            reg = <0x40040000 0x40000>;
+            interrupts = <77 0>, <74 0>, <75 0>;
+            interrupt-names = "otghs", "ep1_out", "ep1_in";
+            num-bidir-endpoints = <9>;
+            ram-size = <4096>;
+            maximum-speed = "high-speed";
+            clocks = <&rcc STM32_CLOCK_BUS_AHB1 0x4000000>;
+            phys = <&otghs_ulpi_phy>;
+            status = "disabled";
+            label= "OTGHS";
+        };
+
+        pinctrl: pin-controller@58020000 {
+            usb_otg_hs_ulpi_clk_pa5: usb_otg_hs_ulpi_clk_pa5 {
+            pinmux = <STM32_PINMUX('A', 5, AF10)>;
+            };
+        };
     };
 
     otghs_ulpi_phy: otghs_ulpi_phy {
-      compatible = "usb-nop-xceiv";// "st,stm32-usbphyc";
-      #phy-cells = <0>;
-      // reg = <0>;
-      label = "OTGHS_ULPI_PHY";
-      status="okay";
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+        label = "OTGHS_ULPI_PHY";
+        status="disabled";
     };
 
     otghs_fs_phy: otghs_fs_phy {
-      compatible = "usb-nop-xceiv";
-      #phy-cells = <0>;
-      label = "OTGHS_FS_PHY";
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+        label = "OTGHS_FS_PHY";
+        status="disabled";
     };
 
     otgfs_phy: otgfs_phy {
-      compatible = "usb-nop-xceiv";
-      #phy-cells = <0>;
-      label = "OTGFS_PHY";
+        compatible = "st,stm32-usbphyc";
+        #phy-cells = <0>;
+        label = "OTGFS_PHY";
+        reg = <0>;
+        status="disabled";
     };
 
     gpioled: leds {
@@ -272,4 +274,42 @@
                  &quadspi_bk1_io2_pf7 &quadspi_bk1_io3_pd13>;
 
     status = "disabled";
+
+    flash-id = <1>;
+
+    mx25l12833f: qspi-nor-flash@0 {
+      compatible = "st,stm32-qspi-nor";
+      label = "mx25l12833f";
+      reg = <0>;
+      qspi-max-frequency = <100000000>;
+      spi-bus-width = <4>;
+      size = <DT_SIZE_M(16*8)>;
+      status = "disabled";
+    };
+};
+
+&usbotg_hs {
+    status = "disabled";
+    pinctrl-names = "default";
+    pinctrl-0 = <
+      /* USB_OTG_HS_ULPI */
+      &usb_otg_hs_ulpi_clk_pa5
+      &usb_otg_hs_ulpi_d0_pa3
+      &usb_otg_hs_ulpi_d1_pb0
+      &usb_otg_hs_ulpi_d2_pb1
+      &usb_otg_hs_ulpi_d3_pb10
+      &usb_otg_hs_ulpi_d4_pb11
+      &usb_otg_hs_ulpi_d5_pb12
+      &usb_otg_hs_ulpi_d6_pb13
+      &usb_otg_hs_ulpi_d7_pb5
+      &usb_otg_hs_ulpi_stp_pc0
+      &usb_otg_hs_ulpi_nxt_ph4
+      &usb_otg_hs_ulpi_dir_pi11
+    >;
+};
+
+&usbotg_fs {
+    status = "disabled";
+    pinctrl-names="default";
+    pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
 };

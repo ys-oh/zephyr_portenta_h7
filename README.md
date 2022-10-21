@@ -2,18 +2,24 @@
 
 target zephyr version : v3.0.0
 
+place board sources to zephyr board root
+```bash
+cd $ZEPHYR_BASE/boards/arm
+
+git clone -b zephyr-v3.0.0 https://github.com/ys-oh/zephyr_portenta_h7.git
+```
 
 ## Build Projects
 <br>
 
 ### M7 Project
 ```bash
-west build -b portenta_h7_m7 -p -- -DBOARD_ROOT=.
+west build -b portenta_h7_m7 -s <app/path>
 ```
 
 ### M4 Project
 ```bash
-west build -b portenta_h7_m4 -p -- -DBOARD_ROOT=.
+west build -b portenta_h7_m4 -p <app/path>
 ```
 <br>
 
