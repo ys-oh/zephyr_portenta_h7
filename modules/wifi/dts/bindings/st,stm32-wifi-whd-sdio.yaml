@@ -1,0 +1,31 @@
+description: stm32 sdmmc disk access
+
+compatible: st,stm32-wifi-whd-sdio
+
+include: [mmc.yaml, pinctrl-device.yaml]
+
+properties:
+    clocks:
+        required: true
+
+    label:
+        required: true
+
+    reg:
+        required: true
+
+    pinctrl-0:
+      required: true
+
+    pinctrl-names:
+      required: true
+
+    wakeup-gpios:
+        type: phandle-array
+        required: false
+        description: wifi host wakeup pin
+
+    pwr-gpios:
+        type: phandle-array
+        required: false
+        description: Power pin

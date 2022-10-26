@@ -273,3 +273,17 @@
 
     status = "disabled";
 };
+
+&sdmmc1 {
+    compatible = "st,stm32-wifi-whd-sdio";
+
+    pinctrl-names = "default";
+    pinctrl-0 = <&sdmmc1_ck_pc12 &sdmmc1_cmd_pd2
+                 &sdmmc1_d0_pc8 &sdmmc1_d1_pc9
+                 &sdmmc1_d2_pc10 &sdmmc1_d3_pc11>;
+
+    pwr-gpios = <&gpioj 1 GPIO_ACTIVE_HIGH>;
+    wakeup-gpios = <&gpioj 5 GPIO_ACTIVE_HIGH>;
+
+    status = "disabled";
+};

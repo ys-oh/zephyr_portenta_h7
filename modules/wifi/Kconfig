@@ -1,0 +1,6 @@
+
+config WIFI_WHD
+  bool "whd enable"
+  default n
+  help
+    whd enable
