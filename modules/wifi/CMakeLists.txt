@@ -2,25 +2,43 @@
 
 if (CONFIG_WIFI_WHD)
 
-  set (WHD_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/lib/wifi-host-driver)
-  set (WHD_CORE_DIR   ${WHD_DIR}/WiFi_Host_Driver)
-  set (WHD_EXT_DIR    ${WHD_DIR}/External)
-  set (WHD_CHIP       "4343W")
-  set (WHD_CHIP_NVRAM "MURATA-1DX")
+  set (WHD_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/lib/wifi-host-driver)
+  set (WHD_CORE_DIR       ${WHD_DIR}/WiFi_Host_Driver)
+  set (WHD_RESOURCE_DIR   ${WHD_CORE_DIR}/resources)
+  set (WHD_EXT_DIR        ${WHD_DIR}/External)
+  set (WHD_CHIP           4343W)
+  set (WHD_CHIP_NVRAM     MURATA-1DX)
 
   # whd common
   zephyr_library_named(whd)
 
   zephyr_include_directories(
+    ${WHD_DIR}
     ${WHD_CORE_DIR}/inc
     ${WHD_CORE_DIR}/resources/resource_imp
     ${WHD_CORE_DIR}/src
     ${WHD_CORE_DIR}/src/include
     ${WHD_CORE_DIR}/src/bus_protocols
+
+    # bsp
+    ${WHD_EXT_DIR}/bsp
+    ${WHD_EXT_DIR}/hal
+    ${WHD_EXT_DIR}/rtos
+
+    # resource & chip
+    ${WHD_RESOURCE_DIR}/firmware/COMPONENT_${WHD_CHIP}
+    ${WHD_RESOURCE_DIR}/clm/COMPONENT_${WHD_CHIP}
+    ${WHD_RESOURCE_DIR}/nvram/COMPONENT_${WHD_CHIP}/COMPONENT_${WHD_CHIP_NVRAM}
+  )
+
+  file (GLOB WHD_CHIP_SRCS
+    ${WHD_RESOURCE_DIR}/firmware/COMPONENT_${WHD_CHIP}/*.c
+    ${WHD_RESOURCE_DIR}/clm/COMPONENT_${WHD_CHIP}/*.c
   )
 
   zephyr_sources(
     ${WHD_CORE_DIR}/resources/resource_imp/whd_resources.c
+    ${WHD_CHIP_SRCS}
 
     ${WHD_CORE_DIR}/src/whd_ap.c
     ${WHD_CORE_DIR}/src/whd_buffer_api.c
@@ -45,33 +63,15 @@ if (CONFIG_WIFI_WHD)
     ${WHD_CORE_DIR}/src/bus_protocols/whd_bus_common.c
     ${WHD_CORE_DIR}/src/bus_protocols/whd_bus_sdio_protocol.c
     ${WHD_CORE_DIR}/src/bus_protocols/whd_bus_spi_protocol.c
+
+    # port
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cyabs_rtos_zephyr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cyhal_gpio_zephyr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/cyhal_sdio_zephyr.c
   )
 
-  # resource & chip
-  add_library(whd-${WHD_CHIP} INTERFACE)
-
-  target_include_directories(whd-4343W INTERFACE
-    ${WHD_CORE_DIR}/firmware/COMPONENT_${WHD_CHIP}
-    ${WHD_CORE_DIR}/clm/COMPONENT_${WHD_CHIP}
-    ${WHD_CORE_DIR}/nvram/COMPONENT_${WHD_CHIP}/COMPONENT_${WHD_CHIP_NVRAM}
+  zephyr_compile_definitions(
+      CYBSP_WIFI_INTERFACE_TYPE=0 # CYBSP_SDIO_INTERFACE
   )
-
-  file (GLOB WHD_${WHD_CHIP}_SRCS
-    ${WHD_CORE_DIR}/firmware/COMPONENT_${WHD_CHIP}/*.c
-    ${WHD_CORE_DIR}/clm/COMPONENT_${WHD_CHIP}/*.c
-  )
-
-  target_sources(whd-${WHD_CHIP} INTERFACE WHD_${WHD_CHIP}_SRCS)
-
-  # bsp
-  add_library(whd-bsp INTERFACE)
-
-  target_include_directories(whd-bsp INTERFACE
-    ${WHD_EXT_DIR}/bsp
-    ${WHD_EXT_DIR}/hal
-    ${WHD_EXT_DIR}/rtos
-  )
-
-  target_link_libraries(whd PUBLIC whd-${WHD_CHIP} whd-bsp)
 
 endif()
