@@ -1,0 +1,3 @@
+[submodule "modules/wifi/lib/wifi-host-driver"]
+	path = modules/wifi/lib/wifi-host-driver
+	url = https://github.com/Infineon/wifi-host-driver.git
