@@ -2,10 +2,11 @@
 
 #if ZEPHYR_VERSION_CODE >= ZEPHYR_VERSION(3,1,0)
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #else
 #include <kernel.h>
-#endif
 #include <device.h>
+#endif
 #include <stm32h7xx_hal.h>
 
 static int early_sys_init(const struct device *dev)

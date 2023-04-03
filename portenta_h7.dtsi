@@ -59,7 +59,6 @@
         compatible = "st,stm32-usbphyc";
         #phy-cells = <0>;
         label = "OTGFS_PHY";
-        reg = <0>;
         status="disabled";
     };
 
@@ -94,7 +93,7 @@
     };
 
     sdram1: sdram@c0000000 {
-        compatible = "mmio-sram";
+        compatible = "zephyr,memory-region", "mmio-sram";
         device_type = "memory";
         reg = <0xc0000000 DT_SIZE_M(8)>;
         zephyr,memory-region = "SDRAM1";
